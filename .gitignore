@@ -35,6 +35,5 @@ google-services.json
 *.hprof
 
 # Projekt
-debug/
 *.hprof
 .DS_Store

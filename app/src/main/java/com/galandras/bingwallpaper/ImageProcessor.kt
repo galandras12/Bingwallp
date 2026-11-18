@@ -3,8 +3,6 @@ package com.galandras.bingwallpaper
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.BitmapRegionDecoder
-import android.graphics.Rect
 import android.os.Build
 import android.view.WindowManager
 import java.io.File
@@ -27,8 +25,9 @@ object ImageProcessor {
     }
 
     /**
-     * A fájlból center-crop-pal a [dstW]x[dstH] arányú képet készít, memóriatakarékosan:
-     * csak a vágási területet dekódolja (BitmapRegionDecoder), mintavételezéssel.
+     * A fájlból center-crop-pal a [dstW]x[dstH] arányú képet készít. Memóriatakarékos: a méretek
+     * előzetes ellenőrzése után mintavételezve (inSampleSize) dekódol, majd vág. A BitmapRegionDecoder-t
+     * szándékosan nem használjuk: egyes eszközökön (Samsung) sérült pixeleket ad.
      */
     fun decodeCropped(file: File, dstW: Int, dstH: Int): Bitmap {
         val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
@@ -43,48 +42,22 @@ object ImageProcessor {
             inSampleSize = sample
             inPreferredConfig = Bitmap.Config.ARGB_8888
         }
-        val decoded: Bitmap = try {
-            decodeRegion(file, Rect(crop.left, crop.top, crop.right, crop.bottom), opts)
-        } catch (e: OutOfMemoryError) {
-            throw ImageException("Kevés a memória a kép feldolgozásához", e)
-        } ?: decodeFullAndCrop(file, srcW, srcH, dstW, dstH, sample)
-
-        val (tw, th) = ImageMath.fitDown(decoded.width, decoded.height, dstW, dstH)
-        if (tw == decoded.width && th == decoded.height) return decoded
-        val scaled = Bitmap.createScaledBitmap(decoded, tw, th, true)
-        if (scaled !== decoded) decoded.recycle()
-        return scaled
-    }
-
-    private fun decodeRegion(file: File, rect: Rect, opts: BitmapFactory.Options): Bitmap? = try {
-        val decoder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            BitmapRegionDecoder.newInstance(file.path)
-        } else {
-            @Suppress("DEPRECATION") BitmapRegionDecoder.newInstance(file.path, false)
-        }
-        try {
-            decoder.decodeRegion(rect, opts)
-        } finally {
-            decoder.recycle()
-        }
-    } catch (e: IOException) {
-        null // visszalépünk a teljes dekódolásra
-    }
-
-    private fun decodeFullAndCrop(file: File, srcW: Int, srcH: Int, dstW: Int, dstH: Int, sample: Int): Bitmap {
-        val opts = BitmapFactory.Options().apply {
-            inSampleSize = sample
-            inPreferredConfig = Bitmap.Config.ARGB_8888
-        }
         val full = try {
             BitmapFactory.decodeFile(file.path, opts)
         } catch (e: OutOfMemoryError) {
             throw ImageException("Kevés a memória a kép feldolgozásához", e)
         } ?: throw ImageException("A kép nem dekódolható")
+
         val c = ImageMath.centerCrop(full.width, full.height, dstW, dstH)
-        val cropped = Bitmap.createBitmap(full, c.left, c.top, c.width, c.height)
+        val cropped = if (c.width == full.width && c.height == full.height) full
+        else Bitmap.createBitmap(full, c.left, c.top, c.width, c.height)
         if (cropped !== full) full.recycle()
-        return cropped
+
+        val (tw, th) = ImageMath.fitDown(cropped.width, cropped.height, dstW, dstH)
+        if (tw == cropped.width && th == cropped.height) return cropped
+        val scaled = Bitmap.createScaledBitmap(cropped, tw, th, true)
+        if (scaled !== cropped) cropped.recycle()
+        return scaled
     }
 
     /** Kicsinyített előnézet (JPEG) a fájlból, max. [maxWidth] széles. */
