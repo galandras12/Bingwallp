@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Bing Háttér</string>
+
+    <string name="today_image">A mai kép</string>
+    <string name="no_preview">Még nincs előnézet. Koppints a „Beállítás most” gombra, vagy várj, amíg betöltődik.</string>
+    <string name="loading_preview">Előnézet betöltése…</string>
+
+    <string name="auto_update">Automatikus frissítés</string>
+    <string name="auto_update_desc">Háttérben, naponta beállítja a Bing aktuális képét.</string>
+
+    <string name="target_title">Hová kerüljön a kép?</string>
+    <string name="target_home">Kezdőképernyő</string>
+    <string name="target_lock">Zárolt képernyő</string>
+    <string name="target_both">Mindkettő</string>
+
+    <string name="interval_title">Frissítési gyakoriság</string>
+    <string name="interval_12">12 óra</string>
+    <string name="interval_24">24 óra</string>
+
+    <string name="set_now">Beállítás most</string>
+    <string name="working">Folyamatban…</string>
+
+    <string name="last_update">Utolsó sikeres frissítés</string>
+    <string name="never">Még nem volt</string>
+    <string name="status">Állapot</string>
+    <string name="status_idle">Még nem futott</string>
+    <string name="status_ok">Sikeres: a háttérkép beállítva</string>
+    <string name="status_already">Rendben: a mai kép már be van állítva</string>
+    <string name="status_err_network">Hálózati hiba, később újrapróbálja: %1$s</string>
+    <string name="status_err_format">A Bing válasza nem értelmezhető: %1$s</string>
+    <string name="status_err_image">Képfeldolgozási hiba: %1$s</string>
+    <string name="status_err_set">A háttérkép beállítása nem sikerült: %1$s</string>
+
+    <string name="battery_title">Akkumulátor és háttérfuttatás</string>
+    <string name="battery_button">Akkumulátor-optimalizálás megnyitása</string>
+    <string name="battery_help">Samsung (One UI) készüléken, hogy az automatikus frissítés megbízhatóan fusson:\n\n1. Beállítások → Akkumulátor → Háttérhasználati korlátok.\n2. Az „Alkalmazások az akkumulátor-optimalizálásnál” / „Nem figyelt appok” listában állítsd a Bing Háttér appot „Korlátlan”-ra.\n3. Ellenőrizd, hogy az app NE szerepeljen az „Alvó appok” és a „Mély alvó appok” között (ha ott van, töröld onnan).\n4. Kapcsold ki az „Automatikus optimalizálás” által okozott korlátozást, ha van ilyen az appnál.</string>
+    <string name="battery_open_failed">Nem sikerült megnyitni a beállításokat. Nyisd meg kézzel: Beállítások → Akkumulátor.</string>
+</resources>
