@@ -37,3 +37,6 @@ google-services.json
 # Projekt
 *.hprof
 .DS_Store
+
+# A debug mappa APK-ja a repo része
+!debug/*.apk
