@@ -62,7 +62,12 @@ object BingParser {
                 .ifBlank { img.optString("urlbase").ifBlank { url } }
 
             val copyright = img.optString("copyright")
-            val title = img.optString("title").ifBlank { copyright.substringBefore(" (").trim() }
+            // A Bing "title" mezője gyakran csak általános ("Info"); ilyenkor a szerzői jogi sor eleje a leírás.
+            val rawTitle = img.optString("title").trim()
+            val fromCopyright = copyright.substringBefore(" (").trim()
+            val title = if (rawTitle.isBlank() || rawTitle.equals("info", ignoreCase = true)) {
+                fromCopyright.ifBlank { rawTitle }
+            } else rawTitle
             return BingImage(id, title, copyright, BingUrls.candidates(url))
         } catch (e: JSONException) {
             throw BingException("Érvénytelen JSON: ${e.message}", transient = false, cause = e)

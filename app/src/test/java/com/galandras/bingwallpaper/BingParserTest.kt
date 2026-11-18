@@ -38,6 +38,11 @@ class BingParserTest {
         assertEquals("Hegy", img.title)
     }
 
+    @Test fun genericInfoTitleIsReplacedByCopyrightHead() {
+        val img = BingParser.parse("""{"images":[{"url":"/th?id=A_1920x1080.jpg","title":"Info","copyright":"Pair of barn owls (© Zahoor Salmi/Getty Images)"}]}""")
+        assertEquals("Pair of barn owls", img.title)
+    }
+
     @Test fun usesUrlbaseWhenUrlMissing() {
         val img = BingParser.parse("""{"images":[{"urlbase":"/th?id=OHR.X_HU1","startdate":"20260101"}]}""")
         assertEquals("https://www.bing.com/th?id=OHR.X_HU1_UHD.jpg", img.candidateUrls.first())
