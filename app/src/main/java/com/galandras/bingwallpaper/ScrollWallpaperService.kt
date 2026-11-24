@@ -10,6 +10,10 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Matrix
 import android.graphics.Paint
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.service.wallpaper.WallpaperService
 import android.view.SurfaceHolder
 import androidx.core.content.ContextCompat
@@ -31,6 +35,24 @@ class ScrollWallpaperService : WallpaperService() {
         private var surfaceH = 0
         private var autoTried = false
         private var offsetEvents = 0
+        private var tiltOn = false
+        private var sensorsOn = false
+        private var filteredAx = 0f
+        private val sensorManager by lazy { getSystemService(SensorManager::class.java) }
+
+        private val tiltListener = object : SensorEventListener {
+            override fun onSensorChanged(event: SensorEvent) {
+                // Aluláteresztő szűrő: a rázkódás/gyors mozgás ne rángassa a képet.
+                filteredAx += 0.12f * (event.values[0] - filteredAx)
+                val target = ImageMath.tiltOffset(filteredAx)
+                if (Math.abs(target - xOffset) >= 0.002f) {
+                    xOffset = target
+                    draw()
+                }
+            }
+
+            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) = Unit
+        }
         private var lastDiagMillis = 0L
         private val paint = Paint(Paint.FILTER_BITMAP_FLAG or Paint.ANTI_ALIAS_FLAG)
 
@@ -53,6 +75,8 @@ class ScrollWallpaperService : WallpaperService() {
         }
 
         override fun onDestroy() {
+            if (sensorsOn) sensorManager?.unregisterListener(tiltListener)
+            sensorsOn = false
             runCatching { applicationContext.unregisterReceiver(receiver) }
             bitmap?.recycle()
             bitmap = null
@@ -68,6 +92,7 @@ class ScrollWallpaperService : WallpaperService() {
         override fun onOffsetsChanged(
             xOffset: Float, yOffset: Float, xOffsetStep: Float, yOffsetStep: Float, xPixelOffset: Int, yPixelOffset: Int,
         ) {
+            if (tiltOn) return // dőléses módban a döntés vezérli a képet, nem a launcher
             // Az eltolást a launcher lépésétől függetlenül használjuk (a Samsung Home gyakran nem ad lépést).
             // Ha a launcher nem lapoz, az alapértelmezett eltolás 0.5, vagyis a kép középre kerül.
             this.xOffset = xOffset.coerceIn(0f, 1f)
@@ -76,7 +101,22 @@ class ScrollWallpaperService : WallpaperService() {
             draw()
         }
 
+        private fun updateSensors(visible: Boolean) {
+            tiltOn = Settings(applicationContext).snapshot().tilt
+            val accel = sensorManager?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+            val want = visible && tiltOn && accel != null
+            if (want && !sensorsOn) {
+                sensorManager?.registerListener(tiltListener, accel, SensorManager.SENSOR_DELAY_GAME)
+                sensorsOn = true
+            } else if (!want && sensorsOn) {
+                sensorManager?.unregisterListener(tiltListener)
+                sensorsOn = false
+                if (!tiltOn) xOffset = 0.5f // kikapcsolt dőlés: vissza középre
+            }
+        }
+
         override fun onVisibilityChanged(visible: Boolean) {
+            updateSensors(visible)
             if (!visible) return
             reloadIfChanged()
             fetchOnce()

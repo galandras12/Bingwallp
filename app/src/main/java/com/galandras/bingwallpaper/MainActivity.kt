@@ -82,6 +82,7 @@ class MainActivity : ComponentActivity() {
                     onAuto = vm::setAuto,
                     onTarget = vm::setTarget,
                     onScroll = vm::setScroll,
+                    onTilt = vm::setTilt,
                     onInterval = vm::setInterval,
                     onSetNow = vm::setNow,
                 )
@@ -110,6 +111,7 @@ private fun MainScreen(
     onAuto: (Boolean) -> Unit,
     onTarget: (Target) -> Unit,
     onScroll: (Boolean) -> Unit,
+    onTilt: (Boolean) -> Unit,
     onInterval: (Int) -> Unit,
     onSetNow: () -> Unit,
 ) {
@@ -167,6 +169,13 @@ private fun MainScreen(
                                 if (s.liveDiag.isBlank()) stringResource(R.string.live_diag_none) else s.liveDiag,
                                 style = MaterialTheme.typography.bodySmall,
                             )
+                        }
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Column(Modifier.weight(1f)) {
+                                Text(stringResource(R.string.tilt_title), style = MaterialTheme.typography.titleSmall)
+                                Text(stringResource(R.string.tilt_desc), style = MaterialTheme.typography.bodySmall)
+                            }
+                            Switch(checked = s.tilt, onCheckedChange = onTilt)
                         }
                         if (!state.liveActive) {
                             FilledTonalButton(onClick = { openLiveWallpaper(ctx) }, modifier = Modifier.fillMaxWidth()) {

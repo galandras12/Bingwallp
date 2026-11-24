@@ -81,3 +81,28 @@ class ScrollWallpaperTest {
         assertTrue(!isAlreadyApplied(s, "id1", "2026-11-25", Target.HOME, true))
     }
 }
+
+class TiltTest {
+    @Test fun flatIsCentered() {
+        assertEquals(0.5f, ImageMath.tiltOffset(0f), 0.0001f)
+    }
+
+    @Test fun rightSideDownMovesAbove() {
+        assertTrue(ImageMath.tiltOffset(-3f) > 0.5f)
+        assertTrue(ImageMath.tiltOffset(3f) < 0.5f)
+    }
+
+    @Test fun isSymmetricAndBounded() {
+        val a = ImageMath.tiltOffset(-9.81f)
+        val b = ImageMath.tiltOffset(9.81f)
+        assertEquals(1f, a + b, 0.0001f)
+        // erős dőlésnél sem lépi túl a reach által megengedett kitérést (0.5 + 0.5*0.35 = 0.675)
+        assertEquals(0.675f, a, 0.0001f)
+    }
+
+    @Test fun reachesFullTravelAtMaxAngle() {
+        val ax = -(9.81f * Math.sin(Math.toRadians(20.0)).toFloat())
+        assertEquals(0.675f, ImageMath.tiltOffset(ax), 0.001f)
+        assertEquals(1f, ImageMath.tiltOffset(ax, reach = 1f), 0.001f)
+    }
+}

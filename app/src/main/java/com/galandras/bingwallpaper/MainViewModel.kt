@@ -83,6 +83,8 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
+    fun setTilt(enabled: Boolean) = settings.setTilt(enabled)
+
     fun refreshLive() {
         val active = runCatching { LiveWallpaper.isActive(getApplication()) }.getOrDefault(false)
         _state.update { it.copy(liveActive = active) }

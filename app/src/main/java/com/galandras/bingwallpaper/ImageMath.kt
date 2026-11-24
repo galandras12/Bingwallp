@@ -49,6 +49,17 @@ object ImageMath {
         return width to screenH
     }
 
+    /**
+     * Oldalirányú dőlésből (gyorsulásmérő x-komponense, m/s²) a háttér eltolása 0..1 között.
+     * A jobb oldal lefelé dőlése (x < 0) a 0,5 fölé viszi az eltolást. [maxAngleDeg] dőlésnél éri el a
+     * [reach] (0..1) arányú kitérést a teljes úttartományból (kicsi reach = enyhe mozgás).
+     */
+    fun tiltOffset(ax: Float, maxAngleDeg: Float = 20f, reach: Float = 0.35f, g: Float = 9.81f): Float {
+        val limit = Math.sin(Math.toRadians(maxAngleDeg.toDouble())).toFloat()
+        val norm = (-ax / g / limit).coerceIn(-1f, 1f)
+        return (0.5f + 0.5f * reach * norm).coerceIn(0f, 1f)
+    }
+
     /** Ha a kép nagyobb a célnál, a cél méretére kicsinyítendő méret; különben változatlan. */
     fun fitDown(w: Int, h: Int, maxW: Int, maxH: Int): Pair<Int, Int> {
         if (w <= maxW && h <= maxH) return w to h

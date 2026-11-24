@@ -14,15 +14,17 @@
     <string name="target_lock">Zárolt képernyő</string>
     <string name="target_both">Mindkettő</string>
 
-    <string name="scroll_title">Csúsztatható háttér</string>
-    <string name="scroll_desc">A kezdőképernyő képe szélesebb a kijelzőnél, és a lapozással együtt elmozdul. A zárolt képernyő a megszokott, rögzített képet kapja.</string>
+    <string name="scroll_title">Széles élő háttér</string>
+    <string name="scroll_desc">A kezdőképernyő képe szélesebb a kijelzőnél, és élő háttérként jelenik meg (a One UI Home a lapozást nem adja át a háttereknek, ezért a mozgatáshoz a döntés használható). A zárolt képernyő a megszokott, rögzített képet kapja.</string>
     <string name="scroll_desc_lock">Csak a kezdőképernyőre vonatkozik; a zárolt képernyő háttere nem csúsztatható.</string>
 
     <string name="live_description">A Bing napi képe, amely a kezdőképernyő lapozásakor elmozdul.</string>
-    <string name="live_active">Az élő háttér aktív: lapozáskor a kép elmozdul.</string>
-    <string name="live_inactive">A csúsztatáshoz az appnak élő háttérként kell aktívnak lennie (a One UI a statikus képet nem görgeti). Aktiváld egyszer; utána az app magától tölti be a mai képet.</string>
+    <string name="live_active">Az élő háttér aktív.</string>
+    <string name="live_inactive">A széles képhez az appnak élő háttérként kell aktívnak lennie. Aktiváld egyszer; utána az app magától tölti be a mai képet.</string>
     <string name="live_diag">Lapozási jelek: %1$d db; utolsó eltolás: %2$s, lépés: %3$s</string>
     <string name="live_diag_none">Még nem érkezett lapozási jel a kezdőképernyőről. Lapozz a kezdőképernyőn, majd nyisd meg újra az appot.</string>
+    <string name="tilt_title">Döntésre mozog</string>
+    <string name="tilt_desc">A telefon oldalirányú döntésére a kép enyhén elmozdul (parallax). Csak akkor használja az érzékelőt, amikor a háttér látszik.</string>
     <string name="live_activate">Élő háttér aktiválása</string>
     <string name="live_open_failed">Nem sikerült megnyitni az élő háttér választót. Keresd: Beállítások → Háttérkép és stílus → Élő háttér.</string>
 

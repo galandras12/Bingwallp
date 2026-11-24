@@ -29,6 +29,7 @@ data class SettingsSnapshot(
     val previewStamp: Long,
     val previewId: String,
     val liveDiag: String = "",
+    val tilt: Boolean = false,
 )
 
 /** SharedPreferences-alapú tároló (kis, függőségmentes). */
@@ -51,9 +52,11 @@ class Settings(context: Context) {
         previewStamp = prefs.getLong(K_PREVIEW, 0L),
         previewId = prefs.getString(K_PREVIEW_ID, "") ?: "",
         liveDiag = prefs.getString(K_LIVE_DIAG, "") ?: "",
+        tilt = prefs.getBoolean(K_TILT, false),
     )
 
     fun setAuto(v: Boolean) = prefs.edit().putBoolean(K_AUTO, v).apply()
+    fun setTilt(v: Boolean) = prefs.edit().putBoolean(K_TILT, v).apply()
     fun setLiveDiag(s: String) = prefs.edit().putString(K_LIVE_DIAG, s).apply()
     fun setScroll(v: Boolean) = prefs.edit().putBoolean(K_SCROLL, v).apply()
     fun setTarget(v: Target) = prefs.edit().putString(K_TARGET, v.name).apply()
@@ -85,6 +88,7 @@ class Settings(context: Context) {
         const val K_AUTO = "auto"
         const val K_SCROLL = "scroll"
         const val K_LIVE_DIAG = "live_diag"
+        const val K_TILT = "tilt"
         const val K_TARGET = "target"
         const val K_INTERVAL = "interval"
         const val K_IMAGE_ID = "image_id"
