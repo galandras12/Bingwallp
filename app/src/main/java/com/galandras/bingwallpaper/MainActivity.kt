@@ -74,6 +74,7 @@ class MainActivity : ComponentActivity() {
                     state = state,
                     onAuto = vm::setAuto,
                     onTarget = vm::setTarget,
+                    onScroll = vm::setScroll,
                     onInterval = vm::setInterval,
                     onSetNow = vm::setNow,
                 )
@@ -101,6 +102,7 @@ private fun MainScreen(
     state: UiState,
     onAuto: (Boolean) -> Unit,
     onTarget: (Target) -> Unit,
+    onScroll: (Boolean) -> Unit,
     onInterval: (Int) -> Unit,
     onSetNow: () -> Unit,
 ) {
@@ -128,6 +130,23 @@ private fun MainScreen(
                         Text(stringResource(R.string.auto_update_desc), style = MaterialTheme.typography.bodySmall)
                     }
                     Switch(checked = s.autoEnabled, onCheckedChange = onAuto)
+                }
+            }
+
+            Card(Modifier.fillMaxWidth()) {
+                val scrollAvailable = s.target != Target.LOCK
+                Row(
+                    Modifier.padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Column(Modifier.weight(1f)) {
+                        Text(stringResource(R.string.scroll_title), style = MaterialTheme.typography.titleMedium)
+                        Text(
+                            stringResource(if (scrollAvailable) R.string.scroll_desc else R.string.scroll_desc_lock),
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                    }
+                    Switch(checked = s.scroll && scrollAvailable, onCheckedChange = onScroll, enabled = scrollAvailable)
                 }
             }
 

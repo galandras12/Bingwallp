@@ -48,6 +48,7 @@ class WallpaperUpdater(private val context: Context) {
     fun run(force: Boolean): UpdateResult {
         val snap = settings.snapshot()
         val target = snap.target
+        val scroll = snap.scroll && target != Target.LOCK
         val today = LocalDate.now().toString()
 
         val image = try {
@@ -56,7 +57,7 @@ class WallpaperUpdater(private val context: Context) {
             return fail(R.string.status_err_network, R.string.status_err_format, e)
         }
 
-        if (!force && isAlreadyApplied(snap, image.id, today, target) && snap.lastSuccessMillis > 0) {
+        if (!force && isAlreadyApplied(snap, image.id, today, target, scroll) && snap.lastSuccessMillis > 0) {
             settings.setMeta(image, snap.previewStamp)
             settings.setStatus(context.getString(R.string.status_already))
             return UpdateResult.AlreadyApplied
@@ -68,13 +69,20 @@ class WallpaperUpdater(private val context: Context) {
             runCatching { ImageProcessor.writePreview(tmp, previewFile()) }
                 .onSuccess { settings.setMeta(image, System.currentTimeMillis()) }
             val (w, h) = ImageProcessor.screenSize(context)
-            val bitmap = ImageProcessor.decodeCropped(tmp, w, h)
-            try {
-                WallpaperManager.getInstance(context).setBitmap(bitmap, null, true, target.flags)
-            } finally {
-                bitmap.recycle()
+            val wm = WallpaperManager.getInstance(context)
+            if (scroll) {
+                // Csúsztatható: a kezdőképernyő képe szélesebb a kijelzőnél (lapozáskor elmozdul).
+                val (srcW, srcH) = ImageProcessor.imageSize(tmp)
+                val (ww, wh) = ImageMath.scrollTarget(w, h, srcW, srcH)
+                apply(wm, ImageProcessor.decodeCropped(tmp, ww, wh), WallpaperManager.FLAG_SYSTEM)
+                // A zárolt képernyő nem görgethető: ott a megszokott, képernyőarányú vágás kell.
+                if (target == Target.BOTH) {
+                    apply(wm, ImageProcessor.decodeCropped(tmp, w, h), WallpaperManager.FLAG_LOCK)
+                }
+            } else {
+                apply(wm, ImageProcessor.decodeCropped(tmp, w, h), target.flags)
             }
-            settings.markApplied(image, target, today, System.currentTimeMillis())
+            settings.markApplied(image, variantKey(target, scroll), today, System.currentTimeMillis())
             settings.setStatus(context.getString(R.string.status_ok))
             return UpdateResult.Applied
         } catch (e: BingException) {
@@ -89,6 +97,14 @@ class WallpaperUpdater(private val context: Context) {
             return store(context.getString(R.string.status_err_image, "kevés a memória"), false)
         } finally {
             tmp.delete()
+        }
+    }
+
+    private fun apply(wm: WallpaperManager, bitmap: android.graphics.Bitmap, flags: Int) {
+        try {
+            wm.setBitmap(bitmap, null, true, flags)
+        } finally {
+            bitmap.recycle()
         }
     }
 

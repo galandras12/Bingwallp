@@ -14,6 +14,10 @@
     <string name="target_lock">Zárolt képernyő</string>
     <string name="target_both">Mindkettő</string>
 
+    <string name="scroll_title">Csúsztatható háttér</string>
+    <string name="scroll_desc">A kezdőképernyő képe szélesebb a kijelzőnél, és a lapozással együtt elmozdul. A zárolt képernyő a megszokott, rögzített képet kapja.</string>
+    <string name="scroll_desc_lock">Csak a kezdőképernyőre vonatkozik; a zárolt képernyő háttere nem csúsztatható.</string>
+
     <string name="interval_title">Frissítési gyakoriság</string>
     <string name="interval_12">12 óra</string>
     <string name="interval_24">24 óra</string>

@@ -73,6 +73,8 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         if (settings.snapshot().autoEnabled) applySchedule()
     }
 
+    fun setScroll(enabled: Boolean) = settings.setScroll(enabled)
+
     fun setInterval(hours: Int) {
         settings.setInterval(hours)
         applySchedule()

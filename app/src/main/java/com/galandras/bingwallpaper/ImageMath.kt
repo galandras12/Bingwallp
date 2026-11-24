@@ -37,6 +37,18 @@ object ImageMath {
         return sample
     }
 
+    /**
+     * A csúsztatható (a kezdőképernyő lapozásakor elmozduló) háttér célmérete: a magasság a
+     * képernyőé, a szélesség a forrás arányát követi, de legalább a képernyő szélessége és
+     * legfeljebb [maxFactor]-szorosa (memória- és használhatósági korlát).
+     */
+    fun scrollTarget(screenW: Int, screenH: Int, srcW: Int, srcH: Int, maxFactor: Double = 3.0): Pair<Int, Int> {
+        require(screenW > 0 && screenH > 0 && srcW > 0 && srcH > 0 && maxFactor >= 1.0)
+        val width = Math.round(screenH.toDouble() * srcW / srcH).toInt()
+            .coerceIn(screenW, Math.round(screenW * maxFactor).toInt())
+        return width to screenH
+    }
+
     /** Ha a kép nagyobb a célnál, a cél méretére kicsinyítendő méret; különben változatlan. */
     fun fitDown(w: Int, h: Int, maxW: Int, maxH: Int): Pair<Int, Int> {
         if (w <= maxW && h <= maxH) return w to h

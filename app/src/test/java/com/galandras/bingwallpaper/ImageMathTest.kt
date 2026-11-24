@@ -47,3 +47,35 @@ class ImageMathTest {
         assertEquals(1000 to 500, ImageMath.fitDown(2000, 1000, 1000, 1000))
     }
 }
+
+class ScrollWallpaperTest {
+    @Test fun wideTargetFollowsSourceAspectWithinCap() {
+        // 16:9 forrás, 1080x2340 kijelző: 2340*16/9 = 4160 -> felső korlát 3*1080 = 3240
+        assertEquals(3240 to 2340, ImageMath.scrollTarget(1080, 2340, 3840, 2160))
+    }
+
+    @Test fun wideTargetUsesSourceAspectWhenBelowCap() {
+        // 4:3 forrás, 1080x1920: 1920*4/3 = 2560 (< 3240)
+        assertEquals(2560 to 1920, ImageMath.scrollTarget(1080, 1920, 4000, 3000))
+    }
+
+    @Test fun wideTargetNeverNarrowerThanScreen() {
+        // álló forrás: nem lehet keskenyebb a képernyőnél
+        assertEquals(1080 to 2340, ImageMath.scrollTarget(1080, 2340, 1000, 3000))
+    }
+
+    @Test fun variantKeyAndAlreadyApplied() {
+        assertEquals("BOTH", variantKey(Target.BOTH, false))
+        assertEquals("HOME+SCROLL", variantKey(Target.HOME, true))
+        assertEquals("LOCK", variantKey(Target.LOCK, true)) // lezárt képernyőnél a mód nem számít
+        val s = SettingsSnapshot(
+            autoEnabled = true, scroll = true, target = Target.HOME, intervalHours = 24,
+            lastImageId = "id1", lastSetDate = "2026-11-24", lastTarget = "HOME+SCROLL",
+            lastSuccessMillis = 1L, status = "", title = "", copyright = "", previewStamp = 0L, previewId = "",
+        )
+        assertTrue(isAlreadyApplied(s, "id1", "2026-11-24", Target.HOME, true))
+        assertTrue(!isAlreadyApplied(s, "id1", "2026-11-24", Target.HOME, false)) // mód váltás: újra kell
+        assertTrue(!isAlreadyApplied(s, "id2", "2026-11-24", Target.HOME, true))
+        assertTrue(!isAlreadyApplied(s, "id1", "2026-11-25", Target.HOME, true))
+    }
+}

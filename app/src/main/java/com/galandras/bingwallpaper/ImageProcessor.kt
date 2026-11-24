@@ -24,6 +24,14 @@ object ImageProcessor {
         return minOf(w, h).coerceAtLeast(1) to maxOf(w, h).coerceAtLeast(1)
     }
 
+    /** A kép méretei dekódolás nélkül; érvénytelen fájlnál [ImageException]. */
+    fun imageSize(file: File): Pair<Int, Int> {
+        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        BitmapFactory.decodeFile(file.path, bounds)
+        if (bounds.outWidth <= 0 || bounds.outHeight <= 0) throw ImageException("A letöltött fájl nem érvényes kép")
+        return bounds.outWidth to bounds.outHeight
+    }
+
     /**
      * A fájlból center-crop-pal a [dstW]x[dstH] arányú képet készít. Memóriatakarékos: a méretek
      * előzetes ellenőrzése után mintavételezve (inSampleSize) dekódol, majd vág. A BitmapRegionDecoder-t

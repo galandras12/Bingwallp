@@ -16,6 +16,7 @@ enum class Target(val flags: Int) {
 /** Az aktuális beállítások és állapot pillanatképe. */
 data class SettingsSnapshot(
     val autoEnabled: Boolean,
+    val scroll: Boolean,
     val target: Target,
     val intervalHours: Int,
     val lastImageId: String,
@@ -36,6 +37,7 @@ class Settings(context: Context) {
 
     fun snapshot() = SettingsSnapshot(
         autoEnabled = prefs.getBoolean(K_AUTO, true),
+        scroll = prefs.getBoolean(K_SCROLL, false),
         target = runCatching { Target.valueOf(prefs.getString(K_TARGET, null) ?: "BOTH") }.getOrDefault(Target.BOTH),
         intervalHours = prefs.getInt(K_INTERVAL, 24).let { if (it == 12) 12 else 24 },
         lastImageId = prefs.getString(K_IMAGE_ID, "") ?: "",
@@ -50,6 +52,7 @@ class Settings(context: Context) {
     )
 
     fun setAuto(v: Boolean) = prefs.edit().putBoolean(K_AUTO, v).apply()
+    fun setScroll(v: Boolean) = prefs.edit().putBoolean(K_SCROLL, v).apply()
     fun setTarget(v: Target) = prefs.edit().putString(K_TARGET, v.name).apply()
     fun setInterval(h: Int) = prefs.edit().putInt(K_INTERVAL, if (h == 12) 12 else 24).apply()
     fun setStatus(s: String) = prefs.edit().putString(K_STATUS, s).apply()
@@ -61,10 +64,10 @@ class Settings(context: Context) {
         .putString(K_PREVIEW_ID, image.id)
         .apply()
 
-    fun markApplied(image: BingImage, target: Target, date: String, now: Long) = prefs.edit()
+    fun markApplied(image: BingImage, variant: String, date: String, now: Long) = prefs.edit()
         .putString(K_IMAGE_ID, image.id)
         .putString(K_SET_DATE, date)
-        .putString(K_LAST_TARGET, target.name)
+        .putString(K_LAST_TARGET, variant)
         .putLong(K_SUCCESS, now)
         .apply()
 
@@ -77,6 +80,7 @@ class Settings(context: Context) {
 
     private companion object {
         const val K_AUTO = "auto"
+        const val K_SCROLL = "scroll"
         const val K_TARGET = "target"
         const val K_INTERVAL = "interval"
         const val K_IMAGE_ID = "image_id"
@@ -91,6 +95,10 @@ class Settings(context: Context) {
     }
 }
 
-/** Kihagyható-e a letöltés: a mai kép már be van állítva ugyanarra a célra. */
-fun isAlreadyApplied(s: SettingsSnapshot, imageId: String, today: String, target: Target): Boolean =
-    s.lastImageId == imageId && s.lastSetDate == today && s.lastTarget == target.name
+/** A beállítás „változata": cél + csúsztatható mód (csak ha van kezdőképernyős cél). */
+fun variantKey(target: Target, scroll: Boolean): String =
+    if (scroll && target != Target.LOCK) "${target.name}+SCROLL" else target.name
+
+/** Kihagyható-e a letöltés: a mai kép már be van állítva ugyanarra a célra és módban. */
+fun isAlreadyApplied(s: SettingsSnapshot, imageId: String, today: String, target: Target, scroll: Boolean): Boolean =
+    s.lastImageId == imageId && s.lastSetDate == today && s.lastTarget == variantKey(target, scroll)
