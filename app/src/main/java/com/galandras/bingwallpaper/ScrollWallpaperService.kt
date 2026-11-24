@@ -30,6 +30,8 @@ class ScrollWallpaperService : WallpaperService() {
         private var surfaceW = 0
         private var surfaceH = 0
         private var autoTried = false
+        private var offsetEvents = 0
+        private var lastDiagMillis = 0L
         private val paint = Paint(Paint.FILTER_BITMAP_FLAG or Paint.ANTI_ALIAS_FLAG)
 
         private val receiver = object : BroadcastReceiver() {
@@ -66,8 +68,11 @@ class ScrollWallpaperService : WallpaperService() {
         override fun onOffsetsChanged(
             xOffset: Float, yOffset: Float, xOffsetStep: Float, yOffsetStep: Float, xPixelOffset: Int, yPixelOffset: Int,
         ) {
-            // Ha a launcher nem lapoz (step <= 0), középre igazítunk.
-            this.xOffset = if (xOffsetStep > 0f) xOffset.coerceIn(0f, 1f) else 0.5f
+            // Az eltolást a launcher lépésétől függetlenül használjuk (a Samsung Home gyakran nem ad lépést).
+            // Ha a launcher nem lapoz, az alapértelmezett eltolás 0.5, vagyis a kép középre kerül.
+            this.xOffset = xOffset.coerceIn(0f, 1f)
+            offsetEvents++
+            recordDiag(xOffset, xOffsetStep)
             draw()
         }
 
@@ -76,6 +81,16 @@ class ScrollWallpaperService : WallpaperService() {
             reloadIfChanged()
             fetchOnce()
             draw()
+        }
+
+        /** Diagnosztika az appnak: hány lapozási jelet kapott a háttér (legfeljebb ~3 mentés/mp). */
+        private fun recordDiag(x: Float, step: Float) {
+            val now = System.currentTimeMillis()
+            if (now - lastDiagMillis < 300) return
+            lastDiagMillis = now
+            Settings(applicationContext).setLiveDiag(
+                applicationContext.getString(R.string.live_diag, offsetEvents, "%.3f".format(x), "%.3f".format(step)),
+            )
         }
 
         private fun reloadIfChanged() {

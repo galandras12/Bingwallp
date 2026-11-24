@@ -21,6 +21,8 @@
     <string name="live_description">A Bing napi képe, amely a kezdőképernyő lapozásakor elmozdul.</string>
     <string name="live_active">Az élő háttér aktív: lapozáskor a kép elmozdul.</string>
     <string name="live_inactive">A csúsztatáshoz az appnak élő háttérként kell aktívnak lennie (a One UI a statikus képet nem görgeti). Aktiváld egyszer; utána az app magától tölti be a mai képet.</string>
+    <string name="live_diag">Lapozási jelek: %1$d db; utolsó eltolás: %2$s, lépés: %3$s</string>
+    <string name="live_diag_none">Még nem érkezett lapozási jel a kezdőképernyőről. Lapozz a kezdőképernyőn, majd nyisd meg újra az appot.</string>
     <string name="live_activate">Élő háttér aktiválása</string>
     <string name="live_open_failed">Nem sikerült megnyitni az élő háttér választót. Keresd: Beállítások → Háttérkép és stílus → Élő háttér.</string>
 

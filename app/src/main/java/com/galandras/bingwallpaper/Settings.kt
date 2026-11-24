@@ -28,6 +28,7 @@ data class SettingsSnapshot(
     val copyright: String,
     val previewStamp: Long,
     val previewId: String,
+    val liveDiag: String = "",
 )
 
 /** SharedPreferences-alapú tároló (kis, függőségmentes). */
@@ -49,9 +50,11 @@ class Settings(context: Context) {
         copyright = prefs.getString(K_COPYRIGHT, "") ?: "",
         previewStamp = prefs.getLong(K_PREVIEW, 0L),
         previewId = prefs.getString(K_PREVIEW_ID, "") ?: "",
+        liveDiag = prefs.getString(K_LIVE_DIAG, "") ?: "",
     )
 
     fun setAuto(v: Boolean) = prefs.edit().putBoolean(K_AUTO, v).apply()
+    fun setLiveDiag(s: String) = prefs.edit().putString(K_LIVE_DIAG, s).apply()
     fun setScroll(v: Boolean) = prefs.edit().putBoolean(K_SCROLL, v).apply()
     fun setTarget(v: Target) = prefs.edit().putString(K_TARGET, v.name).apply()
     fun setInterval(h: Int) = prefs.edit().putInt(K_INTERVAL, if (h == 12) 12 else 24).apply()
@@ -81,6 +84,7 @@ class Settings(context: Context) {
     private companion object {
         const val K_AUTO = "auto"
         const val K_SCROLL = "scroll"
+        const val K_LIVE_DIAG = "live_diag"
         const val K_TARGET = "target"
         const val K_INTERVAL = "interval"
         const val K_IMAGE_ID = "image_id"

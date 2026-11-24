@@ -162,6 +162,12 @@ private fun MainScreen(
                             stringResource(if (state.liveActive) R.string.live_active else R.string.live_inactive),
                             style = MaterialTheme.typography.bodyMedium,
                         )
+                        if (state.liveActive) {
+                            Text(
+                                if (s.liveDiag.isBlank()) stringResource(R.string.live_diag_none) else s.liveDiag,
+                                style = MaterialTheme.typography.bodySmall,
+                            )
+                        }
                         if (!state.liveActive) {
                             FilledTonalButton(onClick = { openLiveWallpaper(ctx) }, modifier = Modifier.fillMaxWidth()) {
                                 Text(stringResource(R.string.live_activate))
