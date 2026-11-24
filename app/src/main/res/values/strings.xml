@@ -30,6 +30,7 @@
     <string name="status">Állapot</string>
     <string name="status_idle">Még nem futott</string>
     <string name="status_ok">Sikeres: a háttérkép beállítva</string>
+    <string name="status_scroll_detail">(csúsztatható; a rendszer kívánt háttérmérete: %1$d×%2$d)</string>
     <string name="status_already">Rendben: a mai kép már be van állítva</string>
     <string name="status_err_network">Hálózati hiba, később újrapróbálja: %1$s</string>
     <string name="status_err_format">A Bing válasza nem értelmezhető: %1$s</string>

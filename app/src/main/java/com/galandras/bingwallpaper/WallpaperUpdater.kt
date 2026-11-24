@@ -74,16 +74,25 @@ class WallpaperUpdater(private val context: Context) {
                 // Csúsztatható: a kezdőképernyő képe szélesebb a kijelzőnél (lapozáskor elmozdul).
                 val (srcW, srcH) = ImageProcessor.imageSize(tmp)
                 val (ww, wh) = ImageMath.scrollTarget(w, h, srcW, srcH)
+                // A rendszernek jelezni kell a kívánt (a kijelzőnél szélesebb) háttérméretet.
+                hint(wm, ww, wh)
                 apply(wm, ImageProcessor.decodeCropped(tmp, ww, wh), WallpaperManager.FLAG_SYSTEM)
                 // A zárolt képernyő nem görgethető: ott a megszokott, képernyőarányú vágás kell.
                 if (target == Target.BOTH) {
                     apply(wm, ImageProcessor.decodeCropped(tmp, w, h), WallpaperManager.FLAG_LOCK)
                 }
             } else {
+                // Nem csúsztatható mód: a kívánt méret visszaáll a kijelzőméretre.
+                hint(wm, w, h)
                 apply(wm, ImageProcessor.decodeCropped(tmp, w, h), target.flags)
             }
             settings.markApplied(image, variantKey(target, scroll), today, System.currentTimeMillis())
-            settings.setStatus(context.getString(R.string.status_ok))
+            val ok = context.getString(R.string.status_ok)
+            settings.setStatus(
+                if (scroll) ok + " " + context.getString(
+                    R.string.status_scroll_detail, wm.desiredMinimumWidth, wm.desiredMinimumHeight,
+                ) else ok,
+            )
             return UpdateResult.Applied
         } catch (e: BingException) {
             return fail(R.string.status_err_network, R.string.status_err_format, e)
@@ -97,6 +106,14 @@ class WallpaperUpdater(private val context: Context) {
             return store(context.getString(R.string.status_err_image, "kevés a memória"), false)
         } finally {
             tmp.delete()
+        }
+    }
+
+    private fun hint(wm: WallpaperManager, w: Int, h: Int) {
+        try {
+            wm.suggestDesiredDimensions(w, h)
+        } catch (_: SecurityException) {
+            // Hint nélkül is beállítható a háttér; csak a csúsztatás nem garantált.
         }
     }
 
