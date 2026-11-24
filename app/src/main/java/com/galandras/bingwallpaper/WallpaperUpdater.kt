@@ -44,6 +44,40 @@ class WallpaperUpdater(private val context: Context) {
         }
     }
 
+    /**
+     * Csak a széles képet készíti el az élő háttérnek (nem állít be semmit, nem érinti az „alkalmazva"
+     * állapotot). Az élő háttér előnézetéhez és az első aktiváláshoz kell.
+     */
+    fun prepareLiveImage(): UpdateResult {
+        val image = try {
+            BingClient.fetchTodayImage()
+        } catch (e: BingException) {
+            return fail(R.string.status_err_network, R.string.status_err_format, e, store = false)
+        }
+        val tmp = File(context.cacheDir, "download_live.img")
+        return try {
+            BingClient.downloadImage(image, tmp)
+            runCatching { ImageProcessor.writePreview(tmp, previewFile()) }
+                .onSuccess { settings.setMeta(image, System.currentTimeMillis()) }
+            val (w, h) = ImageProcessor.screenSize(context)
+            val (srcW, srcH) = ImageProcessor.imageSize(tmp)
+            val (ww, wh) = ImageMath.scrollTarget(w, h, srcW, srcH)
+            val wide = ImageProcessor.decodeCropped(tmp, ww, wh)
+            try { LiveWallpaper.write(context, wide) } finally { wide.recycle() }
+            UpdateResult.Applied
+        } catch (e: BingException) {
+            fail(R.string.status_err_network, R.string.status_err_format, e, store = false)
+        } catch (e: ImageException) {
+            UpdateResult.Failed(e.message ?: "képhiba", false)
+        } catch (e: IOException) {
+            UpdateResult.Failed(e.message ?: "I/O hiba", true)
+        } catch (e: OutOfMemoryError) {
+            UpdateResult.Failed("kevés a memória", false)
+        } finally {
+            tmp.delete()
+        }
+    }
+
     /** @param force true esetén a „már beállítva” ellenőrzést kihagyja. */
     fun run(force: Boolean): UpdateResult {
         val snap = settings.snapshot()
@@ -75,14 +109,17 @@ class WallpaperUpdater(private val context: Context) {
                 // Csúsztatható: a kezdőképernyő képe szélesebb a kijelzőnél (lapozáskor elmozdul).
                 val (srcW, srcH) = ImageProcessor.imageSize(tmp)
                 val (ww, wh) = ImageMath.scrollTarget(w, h, srcW, srcH)
-                if (live) {
-                    // Az app élő háttere aktív: csak a széles képet kell frissíteni, ő rajzolja és csúsztatja.
-                    val wide = ImageProcessor.decodeCropped(tmp, ww, wh)
-                    try { LiveWallpaper.write(context, wide) } finally { wide.recycle() }
-                } else {
-                    // Tartalék: statikus széles kép (a One UI Home általában nem görgeti).
-                    hint(wm, ww, wh)
-                    apply(wm, ImageProcessor.decodeCropped(tmp, ww, wh), WallpaperManager.FLAG_SYSTEM)
+                val wide = ImageProcessor.decodeCropped(tmp, ww, wh)
+                try {
+                    // A széles képet mindig elmentjük: az élő háttér ebből rajzol (aktiválás előtt is kész legyen).
+                    LiveWallpaper.write(context, wide)
+                    if (!live) {
+                        // Tartalék: statikus széles kép (a One UI Home általában nem görgeti).
+                        hint(wm, ww, wh)
+                        wm.setBitmap(wide, null, true, WallpaperManager.FLAG_SYSTEM)
+                    }
+                } finally {
+                    wide.recycle()
                 }
                 // A zárolt képernyő nem görgethető: ott a megszokott, képernyőarányú vágás kell.
                 if (target == Target.BOTH) {

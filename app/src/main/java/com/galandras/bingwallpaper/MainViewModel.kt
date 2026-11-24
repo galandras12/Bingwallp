@@ -77,6 +77,10 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     fun setScroll(enabled: Boolean) {
         settings.setScroll(enabled)
         refreshLive()
+        if (enabled && !LiveWallpaper.imageFile(getApplication()).exists()) {
+            // Az élő háttér aktiválása előtt már legyen kész a széles kép (az előnézet is ezt mutatja).
+            viewModelScope.launch(Dispatchers.IO) { updater.prepareLiveImage() }
+        }
     }
 
     fun refreshLive() {

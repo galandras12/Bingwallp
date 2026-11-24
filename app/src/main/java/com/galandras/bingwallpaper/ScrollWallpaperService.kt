@@ -25,6 +25,7 @@ class ScrollWallpaperService : WallpaperService() {
     private inner class ScrollEngine : Engine() {
         private var bitmap: Bitmap? = null
         private var loadedStamp = -1L
+        private var loadedPath = ""
         private var xOffset = 0.5f
         private var surfaceW = 0
         private var surfaceH = 0
@@ -46,6 +47,7 @@ class ScrollWallpaperService : WallpaperService() {
                 ContextCompat.RECEIVER_NOT_EXPORTED,
             )
             reloadIfChanged()
+            fetchOnce()
         }
 
         override fun onDestroy() {
@@ -72,28 +74,33 @@ class ScrollWallpaperService : WallpaperService() {
         override fun onVisibilityChanged(visible: Boolean) {
             if (!visible) return
             reloadIfChanged()
-            if (bitmap == null) fetchOnce()
+            fetchOnce()
             draw()
         }
 
         private fun reloadIfChanged() {
-            val f = LiveWallpaper.imageFile(applicationContext)
-            if (!f.exists()) return
+            var f = LiveWallpaper.imageFile(applicationContext)
+            if (!f.exists()) {
+                // Amíg nincs széles kép, az előnézeti (16:9) kép látszik, ha van.
+                f = WallpaperUpdater(applicationContext).previewFile()
+                if (!f.exists() || bitmap != null) return
+            }
             val stamp = f.lastModified()
-            if (stamp == loadedStamp && bitmap != null) return
+            if (f.path == loadedPath && stamp == loadedStamp && bitmap != null) return
             val fresh = runCatching { BitmapFactory.decodeFile(f.path) }.getOrNull() ?: return
             val old = bitmap
             bitmap = fresh
             loadedStamp = stamp
+            loadedPath = f.path
             old?.recycle()
         }
 
-        /** Ha még nincs kép (pl. most aktiváltad az élő hátteret), a háttérben letölti a mait. */
+        /** Ha még nincs széles kép, a háttérben elkészíti (mellékhatás nélkül, az előnézetben is). */
         private fun fetchOnce() {
-            if (autoTried || !Settings(applicationContext).snapshot().scroll) return
+            if (autoTried || LiveWallpaper.imageFile(applicationContext).exists()) return
             autoTried = true
             thread(name = "bing-live-initial") {
-                WallpaperUpdater(applicationContext).run(force = true)
+                WallpaperUpdater(applicationContext).prepareLiveImage()
             }
         }
 
