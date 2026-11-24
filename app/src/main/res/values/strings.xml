@@ -25,6 +25,9 @@
     <string name="live_diag_none">Még nem érkezett lapozási jel a kezdőképernyőről. Lapozz a kezdőképernyőn, majd nyisd meg újra az appot.</string>
     <string name="tilt_title">Döntésre mozog</string>
     <string name="tilt_desc">A telefon oldalirányú döntésére a kép enyhén elmozdul (parallax). Csak akkor használja az érzékelőt, amikor a háttér látszik.</string>
+    <string name="tilt_reach">Mozgás mértéke: %1$d%%</string>
+    <string name="tilt_smooth">Simítás (remegés szűrése): %1$d%%</string>
+    <string name="tilt_smooth_hint">Nagyobb simításnál a kép lassabban, finomabban követ, és a kézremegésnyi apró mozdulatokat figyelmen kívül hagyja. A beállítás akkor lép érvénybe, amikor legközelebb látszik a háttér.</string>
     <string name="live_activate">Élő háttér aktiválása</string>
     <string name="live_open_failed">Nem sikerült megnyitni az élő háttér választót. Keresd: Beállítások → Háttérkép és stílus → Élő háttér.</string>
 

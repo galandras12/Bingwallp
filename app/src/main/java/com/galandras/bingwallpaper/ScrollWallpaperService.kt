@@ -38,15 +38,19 @@ class ScrollWallpaperService : WallpaperService() {
         private var tiltOn = false
         private var sensorsOn = false
         private var filteredAx = 0f
+        private var tiltReach = 0.35f
+        private var tiltSmooth = 0.5f
         private val sensorManager by lazy { getSystemService(SensorManager::class.java) }
 
         private val tiltListener = object : SensorEventListener {
             override fun onSensorChanged(event: SensorEvent) {
-                // Aluláteresztő szűrő: a rázkódás/gyors mozgás ne rángassa a képet.
-                filteredAx += 0.12f * (event.values[0] - filteredAx)
-                val target = ImageMath.tiltOffset(filteredAx)
-                if (Math.abs(target - xOffset) >= 0.002f) {
-                    xOffset = target
+                // 1) Aluláteresztő szűrő: a rázkódás/gyors mozgás ne rángassa a képet.
+                filteredAx += ImageMath.filterAlpha(tiltSmooth) * (event.values[0] - filteredAx)
+                val target = ImageMath.tiltOffset(filteredAx, reach = tiltReach)
+                // 2) Holtsáv: a kézremegésnyi apró változást figyelmen kívül hagyja.
+                // 3) Ha ennél nagyobb a változás, fokozatosan (nem ugrásszerűen) követi a célt.
+                if (Math.abs(target - xOffset) >= ImageMath.deadBand(tiltSmooth)) {
+                    xOffset += (target - xOffset) * 0.35f
                     draw()
                 }
             }
@@ -102,7 +106,10 @@ class ScrollWallpaperService : WallpaperService() {
         }
 
         private fun updateSensors(visible: Boolean) {
-            tiltOn = Settings(applicationContext).snapshot().tilt
+            val snap = Settings(applicationContext).snapshot()
+            tiltOn = snap.tilt
+            tiltReach = snap.tiltReach
+            tiltSmooth = snap.tiltSmooth
             val accel = sensorManager?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
             val want = visible && tiltOn && accel != null
             if (want && !sensorsOn) {

@@ -60,6 +60,12 @@ object ImageMath {
         return (0.5f + 0.5f * reach * norm).coerceIn(0f, 1f)
     }
 
+    /** Simítás (0..1) -> aluláteresztő szűrő erőssége: 0 = gyors (0,25), 1 = nagyon lassú, nyugodt (0,02). */
+    fun filterAlpha(smooth: Float): Float = 0.25f - 0.23f * smooth.coerceIn(0f, 1f)
+
+    /** Simítás (0..1) -> holtsáv az eltolás egységében: ennél kisebb változást (kézremegést) figyelmen kívül hagy. */
+    fun deadBand(smooth: Float): Float = 0.0005f + 0.0055f * smooth.coerceIn(0f, 1f)
+
     /** Ha a kép nagyobb a célnál, a cél méretére kicsinyítendő méret; különben változatlan. */
     fun fitDown(w: Int, h: Int, maxW: Int, maxH: Int): Pair<Int, Int> {
         if (w <= maxW && h <= maxH) return w to h

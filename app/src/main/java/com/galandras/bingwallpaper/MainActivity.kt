@@ -37,6 +37,7 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -46,6 +47,9 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -83,6 +87,8 @@ class MainActivity : ComponentActivity() {
                     onTarget = vm::setTarget,
                     onScroll = vm::setScroll,
                     onTilt = vm::setTilt,
+                    onTiltReach = vm::setTiltReach,
+                    onTiltSmooth = vm::setTiltSmooth,
                     onInterval = vm::setInterval,
                     onSetNow = vm::setNow,
                 )
@@ -112,6 +118,8 @@ private fun MainScreen(
     onTarget: (Target) -> Unit,
     onScroll: (Boolean) -> Unit,
     onTilt: (Boolean) -> Unit,
+    onTiltReach: (Float) -> Unit,
+    onTiltSmooth: (Float) -> Unit,
     onInterval: (Int) -> Unit,
     onSetNow: () -> Unit,
 ) {
@@ -176,6 +184,23 @@ private fun MainScreen(
                                 Text(stringResource(R.string.tilt_desc), style = MaterialTheme.typography.bodySmall)
                             }
                             Switch(checked = s.tilt, onCheckedChange = onTilt)
+                        }
+                        if (s.tilt) {
+                            LabeledSlider(
+                                label = stringResource(R.string.tilt_reach, (s.tiltReach * 100).toInt()),
+                                value = s.tiltReach,
+                                range = 0.1f..1f,
+                                onCommit = onTiltReach,
+                                format = { stringResource(R.string.tilt_reach, (it * 100).toInt()) },
+                            )
+                            LabeledSlider(
+                                label = stringResource(R.string.tilt_smooth, (s.tiltSmooth * 100).toInt()),
+                                value = s.tiltSmooth,
+                                range = 0f..1f,
+                                onCommit = onTiltSmooth,
+                                format = { stringResource(R.string.tilt_smooth, (it * 100).toInt()) },
+                            )
+                            Text(stringResource(R.string.tilt_smooth_hint), style = MaterialTheme.typography.bodySmall)
                         }
                         if (!state.liveActive) {
                             FilledTonalButton(onClick = { openLiveWallpaper(ctx) }, modifier = Modifier.fillMaxWidth()) {
@@ -300,6 +325,26 @@ private fun BatteryCard() {
             }
             Text(stringResource(R.string.battery_help), style = MaterialTheme.typography.bodyMedium)
         }
+    }
+}
+
+@Composable
+private fun LabeledSlider(
+    label: String,
+    value: Float,
+    range: ClosedFloatingPointRange<Float>,
+    onCommit: (Float) -> Unit,
+    format: @Composable (Float) -> String,
+) {
+    var local by remember(value) { mutableFloatStateOf(value) }
+    Column {
+        Text(if (local == value) label else format(local), style = MaterialTheme.typography.labelLarge)
+        Slider(
+            value = local,
+            onValueChange = { local = it },
+            onValueChangeFinished = { onCommit(local) },
+            valueRange = range,
+        )
     }
 }
 

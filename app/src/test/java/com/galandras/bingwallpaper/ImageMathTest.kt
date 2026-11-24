@@ -106,3 +106,22 @@ class TiltTest {
         assertEquals(1f, ImageMath.tiltOffset(ax, reach = 1f), 0.001f)
     }
 }
+
+class SmoothingTest {
+    @Test fun filterGetsSlowerWithMoreSmoothing() {
+        assertEquals(0.25f, ImageMath.filterAlpha(0f), 0.0001f)
+        assertEquals(0.02f, ImageMath.filterAlpha(1f), 0.0001f)
+        assertTrue(ImageMath.filterAlpha(0.3f) > ImageMath.filterAlpha(0.7f))
+    }
+
+    @Test fun deadBandGrowsWithSmoothingAndIsClamped() {
+        assertTrue(ImageMath.deadBand(0.9f) > ImageMath.deadBand(0.1f))
+        assertEquals(ImageMath.deadBand(1f), ImageMath.deadBand(5f), 0.00001f)
+        assertEquals(ImageMath.deadBand(0f), ImageMath.deadBand(-1f), 0.00001f)
+    }
+
+    @Test fun smallerReachMovesLess() {
+        val ax = -4f
+        assertTrue(ImageMath.tiltOffset(ax, reach = 0.2f) < ImageMath.tiltOffset(ax, reach = 0.8f))
+    }
+}

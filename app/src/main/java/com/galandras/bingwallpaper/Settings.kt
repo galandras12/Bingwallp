@@ -30,6 +30,8 @@ data class SettingsSnapshot(
     val previewId: String,
     val liveDiag: String = "",
     val tilt: Boolean = false,
+    val tiltReach: Float = 0.35f,
+    val tiltSmooth: Float = 0.5f,
 )
 
 /** SharedPreferences-alapú tároló (kis, függőségmentes). */
@@ -53,9 +55,13 @@ class Settings(context: Context) {
         previewId = prefs.getString(K_PREVIEW_ID, "") ?: "",
         liveDiag = prefs.getString(K_LIVE_DIAG, "") ?: "",
         tilt = prefs.getBoolean(K_TILT, false),
+        tiltReach = prefs.getFloat(K_TILT_REACH, 0.35f).coerceIn(0.1f, 1f),
+        tiltSmooth = prefs.getFloat(K_TILT_SMOOTH, 0.5f).coerceIn(0f, 1f),
     )
 
     fun setAuto(v: Boolean) = prefs.edit().putBoolean(K_AUTO, v).apply()
+    fun setTiltReach(v: Float) = prefs.edit().putFloat(K_TILT_REACH, v.coerceIn(0.1f, 1f)).apply()
+    fun setTiltSmooth(v: Float) = prefs.edit().putFloat(K_TILT_SMOOTH, v.coerceIn(0f, 1f)).apply()
     fun setTilt(v: Boolean) = prefs.edit().putBoolean(K_TILT, v).apply()
     fun setLiveDiag(s: String) = prefs.edit().putString(K_LIVE_DIAG, s).apply()
     fun setScroll(v: Boolean) = prefs.edit().putBoolean(K_SCROLL, v).apply()
@@ -89,6 +95,8 @@ class Settings(context: Context) {
         const val K_SCROLL = "scroll"
         const val K_LIVE_DIAG = "live_diag"
         const val K_TILT = "tilt"
+        const val K_TILT_REACH = "tilt_reach"
+        const val K_TILT_SMOOTH = "tilt_smooth"
         const val K_TARGET = "target"
         const val K_INTERVAL = "interval"
         const val K_IMAGE_ID = "image_id"
