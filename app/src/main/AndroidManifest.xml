@@ -6,6 +6,8 @@
     <!-- A csúsztatható háttér szélességének jelzéséhez (suggestDesiredDimensions); normál, automatikusan megadott engedély. -->
     <uses-permission android:name="android.permission.SET_WALLPAPER_HINTS" />
 
+    <uses-feature android:name="android.software.live_wallpaper" android:required="false" />
+
     <application
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
@@ -21,5 +23,17 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <service
+            android:name=".ScrollWallpaperService"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:permission="android.permission.BIND_WALLPAPER">
+            <intent-filter>
+                <action android:name="android.service.wallpaper.WallpaperService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.service.wallpaper"
+                android:resource="@xml/scroll_wallpaper" />
+        </service>
     </application>
 </manifest>

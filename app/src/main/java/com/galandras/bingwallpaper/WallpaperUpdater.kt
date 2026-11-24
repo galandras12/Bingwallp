@@ -49,6 +49,7 @@ class WallpaperUpdater(private val context: Context) {
         val snap = settings.snapshot()
         val target = snap.target
         val scroll = snap.scroll && target != Target.LOCK
+        val live = scroll && LiveWallpaper.isActive(context)
         val today = LocalDate.now().toString()
 
         val image = try {
@@ -57,7 +58,7 @@ class WallpaperUpdater(private val context: Context) {
             return fail(R.string.status_err_network, R.string.status_err_format, e)
         }
 
-        if (!force && isAlreadyApplied(snap, image.id, today, target, scroll) && snap.lastSuccessMillis > 0) {
+        if (!force && isAlreadyApplied(snap, image.id, today, target, scroll, live) && snap.lastSuccessMillis > 0) {
             settings.setMeta(image, snap.previewStamp)
             settings.setStatus(context.getString(R.string.status_already))
             return UpdateResult.AlreadyApplied
@@ -74,9 +75,15 @@ class WallpaperUpdater(private val context: Context) {
                 // Csúsztatható: a kezdőképernyő képe szélesebb a kijelzőnél (lapozáskor elmozdul).
                 val (srcW, srcH) = ImageProcessor.imageSize(tmp)
                 val (ww, wh) = ImageMath.scrollTarget(w, h, srcW, srcH)
-                // A rendszernek jelezni kell a kívánt (a kijelzőnél szélesebb) háttérméretet.
-                hint(wm, ww, wh)
-                apply(wm, ImageProcessor.decodeCropped(tmp, ww, wh), WallpaperManager.FLAG_SYSTEM)
+                if (live) {
+                    // Az app élő háttere aktív: csak a széles képet kell frissíteni, ő rajzolja és csúsztatja.
+                    val wide = ImageProcessor.decodeCropped(tmp, ww, wh)
+                    try { LiveWallpaper.write(context, wide) } finally { wide.recycle() }
+                } else {
+                    // Tartalék: statikus széles kép (a One UI Home általában nem görgeti).
+                    hint(wm, ww, wh)
+                    apply(wm, ImageProcessor.decodeCropped(tmp, ww, wh), WallpaperManager.FLAG_SYSTEM)
+                }
                 // A zárolt képernyő nem görgethető: ott a megszokott, képernyőarányú vágás kell.
                 if (target == Target.BOTH) {
                     apply(wm, ImageProcessor.decodeCropped(tmp, w, h), WallpaperManager.FLAG_LOCK)
@@ -86,12 +93,16 @@ class WallpaperUpdater(private val context: Context) {
                 hint(wm, w, h)
                 apply(wm, ImageProcessor.decodeCropped(tmp, w, h), target.flags)
             }
-            settings.markApplied(image, variantKey(target, scroll), today, System.currentTimeMillis())
+            settings.markApplied(image, variantKey(target, scroll, live), today, System.currentTimeMillis())
             val ok = context.getString(R.string.status_ok)
             settings.setStatus(
-                if (scroll) ok + " " + context.getString(
-                    R.string.status_scroll_detail, wm.desiredMinimumWidth, wm.desiredMinimumHeight,
-                ) else ok,
+                when {
+                    live -> ok + " " + context.getString(R.string.status_live)
+                    scroll -> ok + " " + context.getString(
+                        R.string.status_scroll_detail, wm.desiredMinimumWidth, wm.desiredMinimumHeight,
+                    )
+                    else -> ok
+                },
             )
             return UpdateResult.Applied
         } catch (e: BingException) {

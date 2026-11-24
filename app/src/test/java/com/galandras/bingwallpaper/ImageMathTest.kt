@@ -68,6 +68,7 @@ class ScrollWallpaperTest {
         assertEquals("BOTH", variantKey(Target.BOTH, false))
         assertEquals("HOME+SCROLL", variantKey(Target.HOME, true))
         assertEquals("LOCK", variantKey(Target.LOCK, true)) // lezárt képernyőnél a mód nem számít
+        assertEquals("BOTH+SCROLL+LIVE", variantKey(Target.BOTH, true, live = true))
         val s = SettingsSnapshot(
             autoEnabled = true, scroll = true, target = Target.HOME, intervalHours = 24,
             lastImageId = "id1", lastSetDate = "2026-11-24", lastTarget = "HOME+SCROLL",
@@ -75,6 +76,7 @@ class ScrollWallpaperTest {
         )
         assertTrue(isAlreadyApplied(s, "id1", "2026-11-24", Target.HOME, true))
         assertTrue(!isAlreadyApplied(s, "id1", "2026-11-24", Target.HOME, false)) // mód váltás: újra kell
+        assertTrue(!isAlreadyApplied(s, "id1", "2026-11-24", Target.HOME, true, live = true)) // élő módra váltás: újra kell
         assertTrue(!isAlreadyApplied(s, "id2", "2026-11-24", Target.HOME, true))
         assertTrue(!isAlreadyApplied(s, "id1", "2026-11-25", Target.HOME, true))
     }

@@ -1,6 +1,8 @@
 package com.galandras.bingwallpaper
 
+import android.app.WallpaperManager
 import android.content.ActivityNotFoundException
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -63,6 +65,11 @@ import java.util.Locale
 
 class MainActivity : ComponentActivity() {
     private val vm: MainViewModel by viewModels()
+
+    override fun onResume() {
+        super.onResume()
+        vm.refreshLive()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -147,6 +154,20 @@ private fun MainScreen(
                         )
                     }
                     Switch(checked = s.scroll && scrollAvailable, onCheckedChange = onScroll, enabled = scrollAvailable)
+                }
+                if (s.scroll && scrollAvailable) {
+                    val ctx = LocalContext.current
+                    Column(Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text(
+                            stringResource(if (state.liveActive) R.string.live_active else R.string.live_inactive),
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
+                        if (!state.liveActive) {
+                            FilledTonalButton(onClick = { openLiveWallpaper(ctx) }, modifier = Modifier.fillMaxWidth()) {
+                                Text(stringResource(R.string.live_activate))
+                            }
+                        }
+                    }
                 }
             }
 
@@ -263,6 +284,20 @@ private fun BatteryCard() {
                 Text(stringResource(R.string.battery_button))
             }
             Text(stringResource(R.string.battery_help), style = MaterialTheme.typography.bodyMedium)
+        }
+    }
+}
+
+private fun openLiveWallpaper(ctx: Context) {
+    val direct = Intent(WallpaperManager.ACTION_CHANGE_LIVE_WALLPAPER)
+        .putExtra(WallpaperManager.EXTRA_LIVE_WALLPAPER_COMPONENT, ComponentName(ctx, ScrollWallpaperService::class.java))
+    try {
+        ctx.startActivity(direct)
+    } catch (_: ActivityNotFoundException) {
+        try {
+            ctx.startActivity(Intent(WallpaperManager.ACTION_LIVE_WALLPAPER_CHOOSER))
+        } catch (_: ActivityNotFoundException) {
+            Toast.makeText(ctx, R.string.live_open_failed, Toast.LENGTH_LONG).show()
         }
     }
 }

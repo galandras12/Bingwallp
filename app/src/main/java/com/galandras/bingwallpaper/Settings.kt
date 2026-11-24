@@ -96,9 +96,10 @@ class Settings(context: Context) {
 }
 
 /** A beállítás „változata": cél + csúsztatható mód (csak ha van kezdőképernyős cél). */
-fun variantKey(target: Target, scroll: Boolean): String =
-    if (scroll && target != Target.LOCK) "${target.name}+SCROLL" else target.name
+fun variantKey(target: Target, scroll: Boolean, live: Boolean = false): String =
+    if (scroll && target != Target.LOCK) "${target.name}+SCROLL" + (if (live) "+LIVE" else "") else target.name
 
 /** Kihagyható-e a letöltés: a mai kép már be van állítva ugyanarra a célra és módban. */
-fun isAlreadyApplied(s: SettingsSnapshot, imageId: String, today: String, target: Target, scroll: Boolean): Boolean =
-    s.lastImageId == imageId && s.lastSetDate == today && s.lastTarget == variantKey(target, scroll)
+fun isAlreadyApplied(
+    s: SettingsSnapshot, imageId: String, today: String, target: Target, scroll: Boolean, live: Boolean = false,
+): Boolean = s.lastImageId == imageId && s.lastSetDate == today && s.lastTarget == variantKey(target, scroll, live)

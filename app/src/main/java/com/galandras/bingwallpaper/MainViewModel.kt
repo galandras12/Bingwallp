@@ -17,6 +17,7 @@ data class UiState(
     val preview: Bitmap? = null,
     val busy: Boolean = false,
     val loadingPreview: Boolean = false,
+    val liveActive: Boolean = false,
 )
 
 class MainViewModel(app: Application) : AndroidViewModel(app) {
@@ -73,7 +74,15 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         if (settings.snapshot().autoEnabled) applySchedule()
     }
 
-    fun setScroll(enabled: Boolean) = settings.setScroll(enabled)
+    fun setScroll(enabled: Boolean) {
+        settings.setScroll(enabled)
+        refreshLive()
+    }
+
+    fun refreshLive() {
+        val active = runCatching { LiveWallpaper.isActive(getApplication()) }.getOrDefault(false)
+        _state.update { it.copy(liveActive = active) }
+    }
 
     fun setInterval(hours: Int) {
         settings.setInterval(hours)

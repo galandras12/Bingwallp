@@ -18,6 +18,12 @@
     <string name="scroll_desc">A kezdőképernyő képe szélesebb a kijelzőnél, és a lapozással együtt elmozdul. A zárolt képernyő a megszokott, rögzített képet kapja.</string>
     <string name="scroll_desc_lock">Csak a kezdőképernyőre vonatkozik; a zárolt képernyő háttere nem csúsztatható.</string>
 
+    <string name="live_description">A Bing napi képe, amely a kezdőképernyő lapozásakor elmozdul.</string>
+    <string name="live_active">Az élő háttér aktív: lapozáskor a kép elmozdul.</string>
+    <string name="live_inactive">A csúsztatáshoz az appnak élő háttérként kell aktívnak lennie (a One UI a statikus képet nem görgeti). Aktiváld egyszer; utána az app magától tölti be a mai képet.</string>
+    <string name="live_activate">Élő háttér aktiválása</string>
+    <string name="live_open_failed">Nem sikerült megnyitni az élő háttér választót. Keresd: Beállítások → Háttérkép és stílus → Élő háttér.</string>
+
     <string name="interval_title">Frissítési gyakoriság</string>
     <string name="interval_12">12 óra</string>
     <string name="interval_24">24 óra</string>
@@ -31,6 +37,7 @@
     <string name="status_idle">Még nem futott</string>
     <string name="status_ok">Sikeres: a háttérkép beállítva</string>
     <string name="status_scroll_detail">(csúsztatható; a rendszer kívánt háttérmérete: %1$d×%2$d)</string>
+    <string name="status_live">(élő háttér, csúsztatható)</string>
     <string name="status_already">Rendben: a mai kép már be van állítva</string>
     <string name="status_err_network">Hálózati hiba, később újrapróbálja: %1$s</string>
     <string name="status_err_format">A Bing válasza nem értelmezhető: %1$s</string>
